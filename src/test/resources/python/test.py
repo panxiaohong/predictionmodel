@@ -1,6 +1,11 @@
-def main():
-    print("main py")
+def main(b):
+
+   b['function']("ger");
+
+def test(b):
+
+    print(str(b));
     return  "success"
 
 if __name__ == "__main__":
-    main()
+    main({'function':'test'})

@@ -2,17 +2,18 @@
 package org.harbinuniversity.predictionmodel.util;
 
 import lombok.extern.slf4j.Slf4j;
-import org.python.core.PyFunction;
+import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
+import javax.swing.plaf.basic.BasicMenuItemUI;
+import java.beans.Statement;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * init pythonInterpreter with Factory pattern
@@ -27,9 +28,9 @@ public class PythonFactory {
         Properties props = new Properties();
         props.setProperty("python.home", PropertiesUtils.getProperty("python.home"));
         props.setProperty("python.security.respectJavaAccessibility", PropertiesUtils.getProperty("python.security.respectJavaAccessibility"));
-        props.setProperty("python.console.encoding",PropertiesUtils.getProperty("python.console.encoding"));
-        props.setProperty("python.import.site",PropertiesUtils.getProperty("python.import.site"));
-        PythonInterpreter.initialize(props, System.getProperties(),null);
+        props.setProperty("python.console.encoding", PropertiesUtils.getProperty("python.console.encoding"));
+        props.setProperty("python.import.site", PropertiesUtils.getProperty("python.import.site"));
+        PythonInterpreter.initialize(props, System.getProperties(), null);
     }
 
     private PythonFactory() {
@@ -42,12 +43,40 @@ public class PythonFactory {
 
     /** get a pyfunction to execute python function */
     public static PyFunction getPyFunction(URL pyFileUrl, String function) {
-            if(Objects.nonNull(pyFileUrl)) {
-                PythonInterpreter interpreter = getPythonInterpreter();
-                interpreter.execfile(pyFileUrl.getPath());
-                return interpreter.get(function, PyFunction.class);
+        if(Objects.nonNull(pyFileUrl)) {
+            PythonInterpreter interpreter = getPythonInterpreter();
+            interpreter.execfile(pyFileUrl.getPath());
+            return interpreter.get(function, PyFunction.class);
+        }
+        return null;
+    }
+
+    /**
+     * @param pyFileUrl     python programming file
+     * @param function      that you will be called to solve the business;
+     * @param params        The parameters of the  @function
+     * @param proxyFunction a proxy function is used to  call the real @function
+     */
+    public static PyObject getResult(URL pyFileUrl, String function, Map<String, Object> params, String proxyFunction) {
+        if(Objects.nonNull(pyFileUrl)) {
+            PythonInterpreter interpreter = getPythonInterpreter();
+            interpreter.execfile(pyFileUrl.getPath());
+            PyFunction pyFunction = null;
+            Map<PyObject, PyObject> table = new HashMap<PyObject, PyObject>();
+            if(Objects.nonNull(proxyFunction)) {
+                pyFunction = interpreter.get(proxyFunction, PyFunction.class);
+                table.put(new PyString("function"), new PyString(function));
+            } else {
+                pyFunction = interpreter.get(function, PyFunction.class);
+                params.keySet().forEach(key -> {
+                    table.put(new PyString(key), PyJavaType.wrapJavaObject(params.get(key)));
+                });
             }
-            return null;
+            PyDictionary dict = new PyDictionary(table);
+            PyObject result = pyFunction.__call__(dict);
+            return result;
+        }
+        return null;
     }
 
 }
