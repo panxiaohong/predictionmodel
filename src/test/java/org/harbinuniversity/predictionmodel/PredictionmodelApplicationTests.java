@@ -18,7 +18,6 @@ public class PredictionmodelApplicationTests {
         PyFunction pyFunction =  PythonFactory.getPyFunction(PredictionmodelApplicationTests.class
                 .getResource("/python/test.py"), "main");
         log.info(pyFunction+"============");
-
     }
 
 }

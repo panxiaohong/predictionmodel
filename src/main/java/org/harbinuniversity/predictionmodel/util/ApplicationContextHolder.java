@@ -8,6 +8,7 @@ import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -16,6 +17,7 @@ import java.util.Map;
  * @author leihong.pan
  */
 @Slf4j
+@Component
 public class ApplicationContextHolder implements ApplicationContextAware, BeanFactoryPostProcessor {
 
     private static ApplicationContext applicationContext = null;

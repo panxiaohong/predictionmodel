@@ -10,10 +10,8 @@ import org.springframework.core.env.Environment;
  * @author leihong.pan
  */
 public class PropertiesUtils {
-    //private static Environment environment = ApplicationContextHolder.getInstence(Environment.class);
-    @Autowired
-    private static Environment env;
+    private static Environment environment = ApplicationContextHolder.getInstence(Environment.class);
     public static String  getProperty(String key){
-        return env.getProperty(key);
+        return environment.getProperty(key);
     };
 }
