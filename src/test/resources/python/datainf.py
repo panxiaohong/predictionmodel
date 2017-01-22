@@ -11,7 +11,7 @@ type = sys.getfilesystemencoding()
 #---------ini data--------
 kilo = 1000   # 3000m circle
 bias = 5000   # about house
-
+file_package = os.getcwd()+"\data\\";
 
 #--------lon,lat->distance-------
 def l2d(lon1,lat1,lon2,lat2):
@@ -32,7 +32,7 @@ def pp(lon,lat):
 	price = 0
 	population = 0
 	c_pr = 0
-	with open(r'E:\social_data_new\house\Beijing_h.csv','r') as rf:
+	with open(file_package+'Beijing_h.csv','r') as rf:
 		for line in rf:
 			line_new = line.split(',')
 			pricepp = float(line_new[-4])
@@ -61,7 +61,7 @@ def pp(lon,lat):
 def poi(lon,lat):
 	ans = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]#lenth = 22
 
-	with open(r'E:\social_data_new\BeijingPOI\bjpoi.txt','r') as rf:
+	with open(file_package+'bjpoi.txt','r') as rf:
 		for line in rf:
 			line_new = line.split(',')
 			if l2d(lon,lat,float(line_new[2]),float(line_new[3]))<kilo:
@@ -117,7 +117,7 @@ def poi(lon,lat):
 #--------gps--------input float return int
 def gps(lon,lat):	
 	ans = [0,0]
-	with open(r'E:\social_data_new\BJGPS_updown\20140607.txt','r') as rf:
+	with open(file_package+'20140607.txt','r') as rf:
 		for line in rf:
 			line_new = line.split()
 			#lat lon not lon lat

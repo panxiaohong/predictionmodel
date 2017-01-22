@@ -55,23 +55,22 @@ public class PythonFactory {
      * @param pyFileUrl     python programming file
      * @param function      that you will be called to solve the business;
      * @param params        The parameters of the  @function
-     * @param proxyFunction a proxy function is used to  call the real @function
      */
-    public static PyObject getResult(URL pyFileUrl, String function, Map<String, Object> params, String proxyFunction) {
+    public static PyObject getResult(URL pyFileUrl, String function, Map<String, Object> params) {
         if(Objects.nonNull(pyFileUrl)) {
             PythonInterpreter interpreter = getPythonInterpreter();
             interpreter.execfile(pyFileUrl.getPath());
             PyFunction pyFunction = null;
             Map<PyObject, PyObject> table = new HashMap<PyObject, PyObject>();
-            if(Objects.nonNull(proxyFunction)) {
-                pyFunction = interpreter.get(proxyFunction, PyFunction.class);
-                table.put(new PyString("function"), new PyString(function));
-            } else {
-                pyFunction = interpreter.get(function, PyFunction.class);
-                params.keySet().forEach(key -> {
-                    table.put(new PyString(key), PyJavaType.wrapJavaObject(params.get(key)));
-                });
+            pyFunction = interpreter.get(function, PyFunction.class);
+            //不使用java8的新的api,Iterator的方式其更高效
+            Iterator<String> iterator = params.keySet().iterator();
+            String key;
+            while(iterator.hasNext()){
+                key=iterator.next();
+                table.put(new PyString(key),PyJavaType.wrapJavaObject(params.get(key)));
             }
+
             PyDictionary dict = new PyDictionary(table);
             PyObject result = pyFunction.__call__(dict);
             return result;

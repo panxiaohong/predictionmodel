@@ -11,7 +11,7 @@ type = sys.getfilesystemencoding()
 #---------ini data--------
 kilo = 1000   # 3000m circle
 bias = 5000   # about house
-
+file_package = os.getcwd()+"\data\\";
 
 #--------lon,lat->distance两点距离-------
 def l2d(lon1,lat1,lon2,lat2):
@@ -32,7 +32,7 @@ def pp(lon,lat):
 	price = 0#平均房价
 	population = 0#某区域范围内的人口数
 	c_pr = 0
-	with open(r'E:\social_data_new\house\Beijing_h.csv','r') as rf:
+	with open(file_package+'Beijing_h.csv','r') as rf:
 		for line in rf:
 			line_new = line.split(',')
 			pricepp = float(line_new[-4])
@@ -61,7 +61,7 @@ def pp(lon,lat):
 def poi(lon,lat):
 	ans = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]#某地区的poi统计到ans列表中；lenth = 22
 
-	with open(r'E:\social_data_new\BeijingPOI\bjpoi.txt','r') as rf:
+	with open(file_package+'bjpoi.txt','r') as rf:
 		for line in rf:
 			line_new = line.split(',')
 			if l2d(lon,lat,float(line_new[2]),float(line_new[3]))<kilo:
@@ -117,7 +117,7 @@ def poi(lon,lat):
 #--------gps--------input float return int
 def gps(lon,lat):	
 	ans = [0,0]#某地区上车下车次数
-	with open(r'E:\social_data_new\BJGPS_updown\20140607.txt','r') as rf:
+	with open(file_package+'20140607.txt','r') as rf:
 		for line in rf:
 			line_new = line.split()
 			#lat lon not lon lat
@@ -352,8 +352,8 @@ def gps(lon,lat):
 '''
 
 #--------update res--------	综合成一个文件
-wf = open(r'E:\social_data_new\res_bj\hotpot\hotpot_data.txt','a')
-with open(r'E:\social_data_new\res_bj\hotpot\hotpot.txt','r') as rf:
+wf = open(file_package+'hotpot_data.txt','a')
+with open(file_package+'hotpot.txt','r') as rf:
 	for line in rf:
 		print '**********************'
 		line_new = line.split(',')

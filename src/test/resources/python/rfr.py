@@ -1,9 +1,10 @@
 from sklearn.ensemble import RandomForestRegressor
-import math
+import math,os
 
 A1 = []
 b1 = []
-with open(r'E:\social_data_new\res_bj\coffee\star\train1.txt','r') as rf:
+file_package = os.getcwd()+"\data\\";
+with open(file_package+'train1.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')
 		for i in range(len(line_new)):
@@ -12,7 +13,7 @@ with open(r'E:\social_data_new\res_bj\coffee\star\train1.txt','r') as rf:
 		b1.append(math.log10(line_new[0]))
 A2 = []
 b2 = []
-with open(r'E:\social_data_new\res_bj\coffee\star\train2.txt','r') as rf:
+with open(file_package+'train2.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')
 		for i in range(len(line_new)):
@@ -21,7 +22,7 @@ with open(r'E:\social_data_new\res_bj\coffee\star\train2.txt','r') as rf:
 		b2.append(math.log10(line_new[0]))
 A3 = []
 b3 = []
-with open(r'E:\social_data_new\res_bj\coffee\star\train3.txt','r') as rf:
+with open(file_package+'train3.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')
 		for i in range(len(line_new)):
@@ -30,7 +31,7 @@ with open(r'E:\social_data_new\res_bj\coffee\star\train3.txt','r') as rf:
 		b3.append(math.log10(line_new[0]))
 A4 = []
 b4 = []
-with open(r'E:\social_data_new\res_bj\coffee\star\train4.txt','r') as rf:
+with open(file_package+'train4.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')
 		for i in range(len(line_new)):
@@ -39,7 +40,7 @@ with open(r'E:\social_data_new\res_bj\coffee\star\train4.txt','r') as rf:
 		b4.append(math.log10(line_new[0]))
 A5 = []
 b5 = []
-with open(r'E:\social_data_new\res_bj\coffee\star\train5.txt','r') as rf:
+with open(file_package+'train5.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')
 		for i in range(len(line_new)):
