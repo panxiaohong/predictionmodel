@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*- 
-import math
-import string
-import os
-import sys
-import imp
-imp.reload(sys)
-sys.setdefaultencoding('gbk')
+import math, os, sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 type = sys.getfilesystemencoding()
 # .decode('utf-8').encode(type)
 
 # ---------ini data--------
 kilo = 1000  # 3000m circle
 bias = 5000  # about house
-file_package = os.getcwd() + "\data\\";
+file_package = sys.path[-1] + "python\data\\";
 
 
 # --------lon,lat->distance-------
@@ -357,30 +353,35 @@ def gps(lon,lat):
 	return ans
 '''
 
+
 # --------update res----pythn----
 # 主程序入口
 
-lon_r = 121.5  # ............前段传递的经度................
-lat_r = 31.2  # ............前段传递的经度................
-line_new = []
-pp_r = pp(lon_r, lat_r)
-line_new.append(7, str(pp_r[0]))  # line_new[9]
-line_new.append(8, str(pp_r[1]))  # line_new[10]
+def main(b):
+    print b
+    line_new = []
+    lon_r = b['lon']
+    lat_r = b['lat']
+    pp_r = pp(lon_r, lat_r)
+    line_new.append((7, str(pp_r[0])))  # line_new[9]
+    line_new.append((8, str(pp_r[1])))  # line_new[10]
 
-tt = 9
-poi_r = poi(lon_r, lat_r)
-for i in range(len(poi_r) - 1):
-    line_new.append(9 + i, str(poi_r[i]))
-    tt = tt + 1
+    tt = 9
+    poi_r = poi(lon_r, lat_r)
+    for i in range(len(poi_r) - 1):
+        line_new.append((9 + i, str(poi_r[i])))
+        tt = tt + 1
 
-gps_r = gps(lon_r, lat_r)
-line_new.append(tt, str(gps_r[0]))
-line_new.append(tt + 1, str(gps_r[1]))
-# print line_new
-line_w.append(line_new[4])
-line_w.append(line_new[6])
-for i in range(7, len(line_new) - 2):
-    line_w.append(line_new[i])
-print (line_w)
-wf.writelines(','.join(line_w))
-wf.writelines('\n')
+    gps_r = gps(lon_r, lat_r)
+    line_new.append((tt, str(gps_r[0])))
+    line_new.append((tt + 1, str(gps_r[1])))
+    line_w = []
+    line_w.append(line_new[4])
+    line_w.append(line_new[6])
+    for i in range(7, len(line_new) - 2):
+        line_w.append(line_new[i])
+    print line_w
+    return line_w
+
+if __name__== '__main__':
+    main({'lon': 121.5, 'lat': 35.2})

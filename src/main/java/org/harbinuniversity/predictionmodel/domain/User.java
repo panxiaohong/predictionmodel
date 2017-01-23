@@ -3,7 +3,6 @@ package org.harbinuniversity.predictionmodel.domain;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.python.antlr.ast.Str;
 
 /**
  *

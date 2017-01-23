@@ -1,5 +1,13 @@
+import math,getopt,os
 from sklearn.ensemble import RandomForestRegressor
-import math,os
+
+opts, args = getopt.getopt(sys.argv[1:], "", ["lat=", "lon="])
+
+for opt, vaule in opts:
+	if opt == '--lon':
+		_lon = vaule
+	elif opt == '--lat':
+		_lat = vaule
 
 A1 = []
 b1 = []
@@ -56,9 +64,12 @@ b_test = b5
 rf = RandomForestRegressor()
 rf.fit(A_train,b_train)
 b_out = rf.predict(A_test)
+print b_out
 err = []
 for i in range(len(b_out)):
 	err.append(abs(b_out[i]-b_test[i])/b_test[i])
+
+print sum(err)
 
 print 1-sum(err)/len(err)#accuracy
 

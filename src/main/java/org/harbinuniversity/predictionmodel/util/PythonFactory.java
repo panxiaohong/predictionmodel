@@ -5,13 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.python.core.*;
 import org.python.util.PythonInterpreter;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
-import javax.swing.plaf.basic.BasicMenuItemUI;
-import java.beans.Statement;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
@@ -30,7 +24,7 @@ public class PythonFactory {
         props.setProperty("python.security.respectJavaAccessibility", PropertiesUtils.getProperty("python.security.respectJavaAccessibility"));
         props.setProperty("python.console.encoding", PropertiesUtils.getProperty("python.console.encoding"));
         props.setProperty("python.import.site", PropertiesUtils.getProperty("python.import.site"));
-        PythonInterpreter.initialize(props, System.getProperties(), null);
+        PythonInterpreter.initialize(System.getProperties(), props, null);
     }
 
     private PythonFactory() {
@@ -58,7 +52,10 @@ public class PythonFactory {
      */
     public static PyObject getResult(URL pyFileUrl, String function, Map<String, Object> params) {
         if(Objects.nonNull(pyFileUrl)) {
-            PythonInterpreter interpreter = getPythonInterpreter();
+            PythonInterpreter interpreter = new PythonInterpreter();
+            interpreter.exec("import sys");
+            log.info(PythonFactory.class.getResource("/").getPath().substring(1).replace("/","\\"));
+            interpreter.exec("sys.path.append('"+PythonFactory.class.getResource("/").getPath().substring(1)+"')");
             interpreter.execfile(pyFileUrl.getPath());
             PyFunction pyFunction = null;
             Map<PyObject, PyObject> table = new HashMap<PyObject, PyObject>();
