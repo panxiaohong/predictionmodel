@@ -3,132 +3,138 @@ import math
 import string
 import os
 import sys
-reload( sys )
+import imp
+imp.reload(sys)
 sys.setdefaultencoding('gbk')
 type = sys.getfilesystemencoding()
-#.decode('utf-8').encode(type)
+# .decode('utf-8').encode(type)
 
-#---------ini data--------
-kilo = 1000   # 3000m circle
-bias = 5000   # about house
-file_package = os.getcwd()+"\data\\";
+# ---------ini data--------
+kilo = 1000  # 3000m circle
+bias = 5000  # about house
+file_package = os.getcwd() + "\data\\";
 
-#--------lon,lat->distance-------
-def l2d(lon1,lat1,lon2,lat2):
-	#float->rad
-	lon1,lat1,lon2,lat2 = map(math.radians,[lon1,lat1,lon2,lat2])	
-	#haversine公式
-	d_lon = lon2 - lon1
-	d_lat = lat2 - lat1
-	a = math.sin(d_lat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(d_lon/2)**2
-	c = 2 * math.asin(math.sqrt(a))
-	r = 6371
-	ans = c*r*1000
-	return ans
 
-#--------price&population---------input float return float
-def pp(lon,lat):
-	ans = []
-	price = 0
-	population = 0
-	c_pr = 0
-	with open(file_package+'Beijing_h.csv','r') as rf:
-		for line in rf:
-			line_new = line.split(',')
-			pricepp = float(line_new[-4])
-			if line_new[-3] == '':
-				populationpp = 0
-			else:
-				populationpp = int(line_new[-3])
-			lonpp = float(line_new[-2])
-			latpp = float(line_new[-1][0:-2])
-			if l2d(lon,lat,lonpp,latpp)<(kilo+bias):
-				if pricepp != 0:
-					price = price + pricepp
-					c_pr = c_pr + 1 
-				#if line_new[3] != '暂无'.decode('utf-8').encode(type):
-				population = population + populationpp
+# --------lon,lat->distance-------
+def l2d(lon1, lat1, lon2, lat2):
+    # float->rad
+    lon1, lat1, lon2, lat2 = map(math.radians, [lon1, lat1, lon2, lat2])
+    # haversine公式
+    d_lon = lon2 - lon1
+    d_lat = lat2 - lat1
+    a = math.sin(d_lat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(d_lon / 2) ** 2
+    c = 2 * math.asin(math.sqrt(a))
+    r = 6371
+    ans = c * r * 1000
+    return ans
 
-		rf.close()
-	if c_pr != 0:
-		price = price/c_pr
-		c_pr = 0
-	ans.append(price)
-	ans.append(population)
-	return ans  #return int but not string
-	
-#--------POI--------input float return int
-def poi(lon,lat):
-	ans = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]#lenth = 22
 
-	with open(file_package+'bjpoi.txt','r') as rf:
-		for line in rf:
-			line_new = line.split(',')
-			if l2d(lon,lat,float(line_new[2]),float(line_new[3]))<kilo:
-				keyword = line_new[4].split(';')[0]
-				if keyword == '餐饮服务'.decode('utf-8').encode(type):
-					ans[0] = ans[0] + 1
-				elif keyword == '道路附属设施'.decode('utf-8').encode(type):
-					ans[1] = ans[1] + 1
-				elif keyword == '地名地址信息'.decode('utf-8').encode(type):
-					ans[2] = ans[2] + 1
-				elif keyword == '风景名胜'.decode('utf-8').encode(type):
-					ans[3] = ans[3] + 1
-				elif keyword == '公共设施'.decode('utf-8').encode(type):
-					ans[4] = ans[4] + 1
-				elif keyword == '公司企业'.decode('utf-8').encode(type):
-					ans[5] = ans[5] + 1
-				elif keyword == '购物服务'.decode('utf-8').encode(type):
-					ans[6] = ans[6] + 1
-				elif keyword == '交通设施服务'.decode('utf-8').encode(type):
-					ans[7] = ans[7] + 1
-				elif keyword == '金融保险服务'.decode('utf-8').encode(type):
-					ans[8] = ans[8] + 1
-				elif keyword == '科教文化服务'.decode('utf-8').encode(type):
-					ans[9] = ans[9] + 1
-				elif keyword == '摩托车服务'.decode('utf-8').encode(type):
-					ans[10] = ans[10] + 1
-				elif keyword == '汽车服务'.decode('utf-8').encode(type):
-					ans[11] = ans[11] + 1
-				elif keyword == '汽车维修'.decode('utf-8').encode(type):
-					ans[12] = ans[12] + 1
-				elif keyword == '汽车销售'.decode('utf-8').encode(type):
-					ans[13] = ans[13] + 1
-				elif keyword == '商务住宅'.decode('utf-8').encode(type):
-					ans[14] = ans[14] + 1
-				elif keyword == '生活服务'.decode('utf-8').encode(type):
-					ans[15] = ans[15] + 1
-				elif keyword == '体育休闲服务'.decode('utf-8').encode(type):
-					ans[16] = ans[16] + 1
-				elif keyword == '通行设施'.decode('utf-8').encode(type):
-					ans[17] = ans[17] + 1
-				elif keyword == '医疗保健服务'.decode('utf-8').encode(type):
-					ans[18] = ans[18] + 1
-				elif keyword == '政府机构及社会团体'.decode('utf-8').encode(type):
-					ans[19] = ans[19] + 1
-				elif keyword == '住宿服务'.decode('utf-8').encode(type):
-					ans[20] = ans[20] + 1
-				else:
-					ans[21] = ans[21] + 1
-		rf.close()		
-	return ans
-	
-	
-#--------gps--------input float return int
-def gps(lon,lat):	
-	ans = [0,0]
-	with open(file_package+'20140607.txt','r') as rf:
-		for line in rf:
-			line_new = line.split()
-			#lat lon not lon lat
-			if l2d(lon,lat,float(line_new[4]),float(line_new[3]))<kilo:
-				if 10<int(line_new[2].split(':')[0])<22:
-					if line_new[5] == 'up':
-						ans[0] = ans[0] + 1
-					else:
-						ans[1] = ans[1] + 1
-		rf.close()
-	return ans
+# --------price&population---------input float return float
+def pp(lon, lat):
+    ans = []
+    price = 0
+    population = 0
+    c_pr = 0
+    with open(file_package + 'Beijing_h.csv', 'r') as rf:
+        for line in rf:
+            line_new = line.split(',')
+            pricepp = float(line_new[-4])
+            if line_new[-3] == '':
+                populationpp = 0
+            else:
+                populationpp = int(line_new[-3])
+            lonpp = float(line_new[-2])
+            latpp = float(line_new[-1][0:-2])
+            if l2d(lon, lat, lonpp, latpp) < (kilo + bias):
+                if pricepp != 0:
+                    price = price + pricepp
+                    c_pr = c_pr + 1
+                # if line_new[3] != '暂无'.decode('utf-8').encode(type):
+                population = population + populationpp
+
+        rf.close()
+    if c_pr != 0:
+        price = price / c_pr
+        c_pr = 0
+    ans.append(price)
+    ans.append(population)
+    return ans  # return int but not string
+
+
+# --------POI--------input float return int
+def poi(lon, lat):
+    ans = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # lenth = 22
+
+    with open(file_package + 'bjpoi.txt', 'r') as rf:
+        for line in rf:
+            line_new = line.split(',')
+            if l2d(lon, lat, float(line_new[2]), float(line_new[3])) < kilo:
+                keyword = line_new[4].split(';')[0]
+                if keyword == '餐饮服务'.decode('utf-8').encode(type):
+                    ans[0] = ans[0] + 1
+                elif keyword == '道路附属设施'.decode('utf-8').encode(type):
+                    ans[1] = ans[1] + 1
+                elif keyword == '地名地址信息'.decode('utf-8').encode(type):
+                    ans[2] = ans[2] + 1
+                elif keyword == '风景名胜'.decode('utf-8').encode(type):
+                    ans[3] = ans[3] + 1
+                elif keyword == '公共设施'.decode('utf-8').encode(type):
+                    ans[4] = ans[4] + 1
+                elif keyword == '公司企业'.decode('utf-8').encode(type):
+                    ans[5] = ans[5] + 1
+                elif keyword == '购物服务'.decode('utf-8').encode(type):
+                    ans[6] = ans[6] + 1
+                elif keyword == '交通设施服务'.decode('utf-8').encode(type):
+                    ans[7] = ans[7] + 1
+                elif keyword == '金融保险服务'.decode('utf-8').encode(type):
+                    ans[8] = ans[8] + 1
+                elif keyword == '科教文化服务'.decode('utf-8').encode(type):
+                    ans[9] = ans[9] + 1
+                elif keyword == '摩托车服务'.decode('utf-8').encode(type):
+                    ans[10] = ans[10] + 1
+                elif keyword == '汽车服务'.decode('utf-8').encode(type):
+                    ans[11] = ans[11] + 1
+                elif keyword == '汽车维修'.decode('utf-8').encode(type):
+                    ans[12] = ans[12] + 1
+                elif keyword == '汽车销售'.decode('utf-8').encode(type):
+                    ans[13] = ans[13] + 1
+                elif keyword == '商务住宅'.decode('utf-8').encode(type):
+                    ans[14] = ans[14] + 1
+                elif keyword == '生活服务'.decode('utf-8').encode(type):
+                    ans[15] = ans[15] + 1
+                elif keyword == '体育休闲服务'.decode('utf-8').encode(type):
+                    ans[16] = ans[16] + 1
+                elif keyword == '通行设施'.decode('utf-8').encode(type):
+                    ans[17] = ans[17] + 1
+                elif keyword == '医疗保健服务'.decode('utf-8').encode(type):
+                    ans[18] = ans[18] + 1
+                elif keyword == '政府机构及社会团体'.decode('utf-8').encode(type):
+                    ans[19] = ans[19] + 1
+                elif keyword == '住宿服务'.decode('utf-8').encode(type):
+                    ans[20] = ans[20] + 1
+                else:
+                    ans[21] = ans[21] + 1
+        rf.close()
+    return ans
+
+
+# --------gps--------input float return int
+def gps(lon, lat):
+    ans = [0, 0]
+    with open(file_package + '20140607.txt', 'r') as rf:
+        for line in rf:
+            line_new = line.split()
+            # lat lon not lon lat
+            if l2d(lon, lat, float(line_new[4]), float(line_new[3])) < kilo:
+                if 10 < int(line_new[2].split(':')[0]) < 22:
+                    if line_new[5] == 'up':
+                        ans[0] = ans[0] + 1
+                    else:
+                        ans[1] = ans[1] + 1
+        rf.close()
+    return ans
+
+
 '''
 #--------gps--------input float return int
 def gps(lon,lat):
@@ -351,33 +357,30 @@ def gps(lon,lat):
 	return ans
 '''
 
-#--------update res--------	
-#主程序入口
+# --------update res----pythn----
+# 主程序入口
 
-lon_r = 121.5#............前段传递的经度................
-lat_r = 31.2#............前段传递的经度................
+lon_r = 121.5  # ............前段传递的经度................
+lat_r = 31.2  # ............前段传递的经度................
 line_new = []
-pp_r = pp(lon_r,lat_r)
-line_new.append(7,str(pp_r[0]))   #line_new[9]
-line_new.append(8,str(pp_r[1]))   #line_new[10]
+pp_r = pp(lon_r, lat_r)
+line_new.append(7, str(pp_r[0]))  # line_new[9]
+line_new.append(8, str(pp_r[1]))  # line_new[10]
 
 tt = 9
-poi_r = poi(lon_r,lat_r)
-for i in range(len(poi_r)-1):
-	line_new.append(9+i,str(poi_r[i]))
-	tt = tt+1
+poi_r = poi(lon_r, lat_r)
+for i in range(len(poi_r) - 1):
+    line_new.append(9 + i, str(poi_r[i]))
+    tt = tt + 1
 
-gps_r = gps(lon_r,lat_r)
-line_new.append(tt,str(gps_r[0]))
-line_new.append(tt+1,str(gps_r[1]))
-#print line_new
+gps_r = gps(lon_r, lat_r)
+line_new.append(tt, str(gps_r[0]))
+line_new.append(tt + 1, str(gps_r[1]))
+# print line_new
 line_w.append(line_new[4])
 line_w.append(line_new[6])
-for i in range(7,len(line_new)-2):
-	line_w.append(line_new[i])
-print line_w#.................将周围环境数据根据经纬度对应出来..............
+for i in range(7, len(line_new) - 2):
+    line_w.append(line_new[i])
+print (line_w)
 wf.writelines(','.join(line_w))
 wf.writelines('\n')
-
-
-

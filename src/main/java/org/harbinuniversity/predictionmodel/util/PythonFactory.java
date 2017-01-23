@@ -70,7 +70,6 @@ public class PythonFactory {
                 key=iterator.next();
                 table.put(new PyString(key),PyJavaType.wrapJavaObject(params.get(key)));
             }
-
             PyDictionary dict = new PyDictionary(table);
             PyObject result = pyFunction.__call__(dict);
             return result;
