@@ -1,2 +1,6 @@
-import sys,getopt
-opts, args = getopt.getopt(sys.argv[1:], "", ["lat", "lon="])
+from MySqlConn import Mysql
+
+
+arr = [0] *20
+print arr
+print len(arr)

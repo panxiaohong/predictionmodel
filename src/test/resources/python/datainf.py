@@ -1,14 +1,10 @@
 # -*- coding: utf-8 -*- 
 import math, os, sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
-type = sys.getfilesystemencoding()
-# .decode('utf-8').encode(type)
+import config as Config
+from MySqlConn import Mysql
 
-# ---------ini data--------
-kilo = 1000  # 3000m circle
-bias = 5000  # about house
-file_package = sys.path[-1] + "python\data\\";
+kilo = Config.KILO  # 3000m circle
+bias = Config.BIAS  # about house
 
 
 # --------lon,lat->distance-------
@@ -30,338 +26,62 @@ def pp(lon, lat):
     ans = []
     price = 0
     population = 0
-    c_pr = 0
-    with open(file_package + 'Beijing_h.csv', 'r') as rf:
-        for line in rf:
-            line_new = line.split(',')
-            pricepp = float(line_new[-4])
-            if line_new[-3] == '':
-                populationpp = 0
-            else:
-                populationpp = int(line_new[-3])
-            lonpp = float(line_new[-2])
-            latpp = float(line_new[-1][0:-2])
-            if l2d(lon, lat, lonpp, latpp) < (kilo + bias):
-                if pricepp != 0:
-                    price = price + pricepp
-                    c_pr = c_pr + 1
-                # if line_new[3] != '暂无'.decode('utf-8').encode(type):
-                population = population + populationpp
+    mysql = Mysql()
+    result = mysql.getAll("select  * from shelter_info where rooms_total >=0 AND price >=0")
+    c_pr = len(result)
+    for shelterInfo in result:
+        if l2d(lon, lat, shelterInfo['lon'], shelterInfo['lat']) < (kilo + bias):
+            price = price + shelterInfo['price']
+            population = population + shelterInfo['rooms_total']
+    mysql.dispose()
 
-        rf.close()
     if c_pr != 0:
         price = price / c_pr
-        c_pr = 0
     ans.append(price)
     ans.append(population)
-    return ans  # return int but not string
+    mysql.dispose()
+    return ans  # return int but not string  # --------POI--------input float return int
 
 
-# --------POI--------input float return int
 def poi(lon, lat):
-    ans = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]  # lenth = 22
-
-    with open(file_package + 'bjpoi.txt', 'r') as rf:
-        for line in rf:
-            line_new = line.split(',')
-            if l2d(lon, lat, float(line_new[2]), float(line_new[3])) < kilo:
-                keyword = line_new[4].split(';')[0]
-                if keyword == '餐饮服务'.decode('utf-8').encode(type):
-                    ans[0] = ans[0] + 1
-                elif keyword == '道路附属设施'.decode('utf-8').encode(type):
-                    ans[1] = ans[1] + 1
-                elif keyword == '地名地址信息'.decode('utf-8').encode(type):
-                    ans[2] = ans[2] + 1
-                elif keyword == '风景名胜'.decode('utf-8').encode(type):
-                    ans[3] = ans[3] + 1
-                elif keyword == '公共设施'.decode('utf-8').encode(type):
-                    ans[4] = ans[4] + 1
-                elif keyword == '公司企业'.decode('utf-8').encode(type):
-                    ans[5] = ans[5] + 1
-                elif keyword == '购物服务'.decode('utf-8').encode(type):
-                    ans[6] = ans[6] + 1
-                elif keyword == '交通设施服务'.decode('utf-8').encode(type):
-                    ans[7] = ans[7] + 1
-                elif keyword == '金融保险服务'.decode('utf-8').encode(type):
-                    ans[8] = ans[8] + 1
-                elif keyword == '科教文化服务'.decode('utf-8').encode(type):
-                    ans[9] = ans[9] + 1
-                elif keyword == '摩托车服务'.decode('utf-8').encode(type):
-                    ans[10] = ans[10] + 1
-                elif keyword == '汽车服务'.decode('utf-8').encode(type):
-                    ans[11] = ans[11] + 1
-                elif keyword == '汽车维修'.decode('utf-8').encode(type):
-                    ans[12] = ans[12] + 1
-                elif keyword == '汽车销售'.decode('utf-8').encode(type):
-                    ans[13] = ans[13] + 1
-                elif keyword == '商务住宅'.decode('utf-8').encode(type):
-                    ans[14] = ans[14] + 1
-                elif keyword == '生活服务'.decode('utf-8').encode(type):
-                    ans[15] = ans[15] + 1
-                elif keyword == '体育休闲服务'.decode('utf-8').encode(type):
-                    ans[16] = ans[16] + 1
-                elif keyword == '通行设施'.decode('utf-8').encode(type):
-                    ans[17] = ans[17] + 1
-                elif keyword == '医疗保健服务'.decode('utf-8').encode(type):
-                    ans[18] = ans[18] + 1
-                elif keyword == '政府机构及社会团体'.decode('utf-8').encode(type):
-                    ans[19] = ans[19] + 1
-                elif keyword == '住宿服务'.decode('utf-8').encode(type):
-                    ans[20] = ans[20] + 1
+    mysql = Mysql()
+    result = mysql.getAll("select  lon,lat,provider_tag from poi")
+    tags = mysql.getAll("select id,tag from shop_tag")
+    tagsLenders = len(tags)
+    ans = [0] * (tagsLenders + 1)
+    for poi in result:
+        if l2d(lon, lat, poi['lon'], poi['lat']) < kilo:
+            keyword = poi['provider_tag'].split(';')[0]
+            for tag in tags:
+                if tag['tag'] == keyword:
+                    ans[tag['id'] - 1] = ans[tag['id'] - 1] + 1
                 else:
-                    ans[21] = ans[21] + 1
-        rf.close()
-    return ans
+                    ans[tagsLenders] = ans[tagsLenders] + 1
+    mysql.dispose()
+
+    return ans  # --------gps--------input float return int
 
 
-# --------gps--------input float return int
 def gps(lon, lat):
-    ans = [0, 0]
-    with open(file_package + '20140607.txt', 'r') as rf:
-        for line in rf:
-            line_new = line.split()
-            # lat lon not lon lat
-            if l2d(lon, lat, float(line_new[4]), float(line_new[3])) < kilo:
-                if 10 < int(line_new[2].split(':')[0]) < 22:
-                    if line_new[5] == 'up':
-                        ans[0] = ans[0] + 1
-                    else:
-                        ans[1] = ans[1] + 1
-        rf.close()
+    ans = [0] * 2
+    mysql = Mysql()
+    result = mysql.getAll(
+        "SELECT lon,lat,action  from predict.taxi_info  where date_format(taxi_info.time,'%H') BETWEEN 10 and 22")
+    for taxiInfo in result:
+        if l2d(lon, lat, taxiInfo['lon'], taxiInfo['lat']) < kilo:
+            if taxiInfo['action'] == 'up':
+                ans[0] = ans[0] + 1
+            else:
+                ans[1] = ans[1] + 1
+
     return ans
 
 
-'''
-#--------gps--------input float return int
-def gps(lon,lat):
-	
-	ans = [0,0,0,0]
-	ans[0] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] # weekday 24h up
-	ans[1] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] # weekday 24h down
-	ans[2] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] # weekend 24h up
-	ans[3] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0] # weekend 24h down
-	#20140602-06 monday-friday 
-	with open(r'E:\social_data_new\BJGPS_updown\20140604.txt','r') as rf:
-		for line in rf:
-			line_new = line.split()
-			#lat lon not lon lat
-			if l2d(lon,lat,float(line_new[4]),float(line_new[3]))<kilo:
-				if line_new[2].split(':')[0]=='00':
-					if line_new[5] == 'up':
-						ans[0][0] = ans[0][0] + 1
-					else: ans[1][0] = ans[1][0] + 1
-				if line_new[2].split(':')[0]=='01':
-					if line_new[5] == 'up':
-						ans[0][1] = ans[0][1] + 1
-					else: ans[1][1] = ans[1][1] + 1
-				if line_new[2].split(':')[0]=='02':
-					if line_new[5] == 'up':
-						ans[0][2] = ans[0][2] + 1
-					else: ans[1][2] = ans[1][2] + 1
-				if line_new[2].split(':')[0]=='03':
-					if line_new[5] == 'up':
-						ans[0][3] = ans[0][3] + 1
-					else: ans[1][3] = ans[1][3] + 1
-				if line_new[2].split(':')[0]=='04':
-					if line_new[5] == 'up':
-						ans[0][4] = ans[0][4] + 1
-					else: ans[1][4] = ans[1][4] + 1
-				if line_new[2].split(':')[0]=='05':
-					if line_new[5] == 'up':
-						ans[0][5] = ans[0][5] + 1
-					else: ans[1][5] = ans[1][5] + 1
-				if line_new[2].split(':')[0]=='06':
-					if line_new[5] == 'up':
-						ans[0][6] = ans[0][6] + 1
-					else: ans[1][6] = ans[1][6] + 1
-				if line_new[2].split(':')[0]=='07':
-					if line_new[5] == 'up':
-						ans[0][7] = ans[0][7] + 1
-					else: ans[1][7] = ans[1][7] + 1
-				if line_new[2].split(':')[0]=='08':
-					if line_new[5] == 'up':
-						ans[0][8] = ans[0][8] + 1
-					else: ans[1][8] = ans[1][8] + 1
-				if line_new[2].split(':')[0]=='09':
-					if line_new[5] == 'up':
-						ans[0][9] = ans[0][9] + 1
-					else: ans[1][9] = ans[1][9] + 1
-				if line_new[2].split(':')[0]=='10':
-					if line_new[5] == 'up':
-						ans[0][10] = ans[0][10] + 1
-					else: ans[1][10] = ans[1][10] + 1
-				if line_new[2].split(':')[0]=='11':
-					if line_new[5] == 'up':
-						ans[0][11] = ans[0][11] + 1
-					else: ans[1][11] = ans[1][11] + 1
-				if line_new[2].split(':')[0]=='12':
-					if line_new[5] == 'up':
-						ans[0][12] = ans[0][12] + 1
-					else: ans[1][12] = ans[1][12] + 1
-				if line_new[2].split(':')[0]=='13':
-					if line_new[5] == 'up':
-						ans[0][13] = ans[0][13] + 1
-					else: ans[1][13] = ans[1][13] + 1
-				if line_new[2].split(':')[0]=='14':
-					if line_new[5] == 'up':
-						ans[0][14] = ans[0][14] + 1
-					else: ans[1][14] = ans[1][14] + 1
-				if line_new[2].split(':')[0]=='15':
-					if line_new[5] == 'up':
-						ans[0][15] = ans[0][15] + 1
-					else: ans[1][15] = ans[1][15] + 1
-				if line_new[2].split(':')[0]=='16':
-					if line_new[5] == 'up':
-						ans[0][16] = ans[0][16] + 1
-					else: ans[1][16] = ans[1][16] + 1
-				if line_new[2].split(':')[0]=='17':
-					if line_new[5] == 'up':
-						ans[0][17] = ans[0][17] + 1
-					else: ans[1][17] = ans[1][17] + 1
-				if line_new[2].split(':')[0]=='18':
-					if line_new[5] == 'up':
-						ans[0][18] = ans[0][18] + 1
-					else: ans[1][18] = ans[1][18] + 1
-				if line_new[2].split(':')[0]=='19':
-					if line_new[5] == 'up':
-						ans[0][19] = ans[0][19] + 1
-					else: ans[1][19] = ans[1][19] + 1
-				if line_new[2].split(':')[0]=='20':
-					if line_new[5] == 'up':
-						ans[0][20] = ans[0][20] + 1
-					else: ans[1][20] = ans[1][20] + 1
-				if line_new[2].split(':')[0]=='21':
-					if line_new[5] == 'up':
-						ans[0][21] = ans[0][21] + 1
-					else: ans[1][21] = ans[1][21] + 1
-				if line_new[2].split(':')[0]=='22':
-					if line_new[5] == 'up':
-						ans[0][22] = ans[0][22] + 1
-					else: ans[1][22] = ans[1][22] + 1
-				if line_new[2].split(':')[0]=='23':
-					if line_new[5] == 'up':
-						ans[0][23] = ans[0][23] + 1
-					else: ans[1][23] = ans[1][23] + 1				
-		rf.close()	
-
-
-				
-
-
-	with open(r'E:\social_data_new\BJGPS_updown\20140607.txt','r') as rf:
-		for line in rf:
-			line_new = line.split()
-			#lat lon not lon lat
-			if l2d(lon,lat,float(line_new[4]),float(line_new[3]))<kilo:
-				if line_new[2].split(':')[0]=='00':
-					if line_new[5] == 'up':
-						ans[2][0] = ans[2][0] + 1
-					else: ans[3][0] = ans[3][0] + 1
-				if line_new[2].split(':')[0]=='01':
-					if line_new[5] == 'up':
-						ans[2][1] = ans[2][1] + 1
-					else: ans[3][1] = ans[3][1] + 1
-				if line_new[2].split(':')[0]=='02':
-					if line_new[5] == 'up':
-						ans[2][2] = ans[2][2] + 1
-					else: ans[3][2] = ans[3][2] + 1
-				if line_new[2].split(':')[0]=='03':
-					if line_new[5] == 'up':
-						ans[2][3] = ans[2][3] + 1
-					else: ans[3][3] = ans[3][3] + 1
-				if line_new[2].split(':')[0]=='04':
-					if line_new[5] == 'up':
-						ans[2][4] = ans[2][4] + 1
-					else: ans[3][4] = ans[3][4] + 1
-				if line_new[2].split(':')[0]=='05':
-					if line_new[5] == 'up':
-						ans[2][5] = ans[2][5] + 1
-					else: ans[3][5] = ans[3][5] + 1
-				if line_new[2].split(':')[0]=='06':
-					if line_new[5] == 'up':
-						ans[2][6] = ans[2][6] + 1
-					else: ans[3][6] = ans[3][6] + 1
-				if line_new[2].split(':')[0]=='07':
-					if line_new[5] == 'up':
-						ans[2][7] = ans[2][7] + 1
-					else: ans[3][7] = ans[3][7] + 1
-				if line_new[2].split(':')[0]=='08':
-					if line_new[5] == 'up':
-						ans[2][8] = ans[2][8] + 1
-					else: ans[3][8] = ans[3][8] + 1
-				if line_new[2].split(':')[0]=='09':
-					if line_new[5] == 'up':
-						ans[2][9] = ans[2][9] + 1
-					else: ans[3][9] = ans[3][9] + 1
-				if line_new[2].split(':')[0]=='10':
-					if line_new[5] == 'up':
-						ans[2][10] = ans[2][10] + 1
-					else: ans[3][10] = ans[3][10] + 1
-				if line_new[2].split(':')[0]=='11':
-					if line_new[5] == 'up':
-						ans[2][11] = ans[2][11] + 1
-					else: ans[3][11] = ans[3][11] + 1
-				if line_new[2].split(':')[0]=='12':
-					if line_new[5] == 'up':
-						ans[2][12] = ans[2][12] + 1
-					else: ans[3][12] = ans[3][12] + 1
-				if line_new[2].split(':')[0]=='13':
-					if line_new[5] == 'up':
-						ans[2][13] = ans[2][13] + 1
-					else: ans[3][13] = ans[3][13] + 1
-				if line_new[2].split(':')[0]=='14':
-					if line_new[5] == 'up':
-						ans[2][14] = ans[2][14] + 1
-					else: ans[3][14] = ans[3][14] + 1
-				if line_new[2].split(':')[0]=='15':
-					if line_new[5] == 'up':
-						ans[2][15] = ans[2][15] + 1
-					else: ans[3][15] = ans[3][15] + 1
-				if line_new[2].split(':')[0]=='16':
-					if line_new[5] == 'up':
-						ans[2][16] = ans[2][16] + 1
-					else: ans[3][16] = ans[3][16] + 1
-				if line_new[2].split(':')[0]=='17':
-					if line_new[5] == 'up':
-						ans[2][17] = ans[2][17] + 1
-					else: ans[3][17] = ans[3][17] + 1
-				if line_new[2].split(':')[0]=='18':
-					if line_new[5] == 'up':
-						ans[2][18] = ans[2][18] + 1
-					else: ans[3][18] = ans[3][18] + 1
-				if line_new[2].split(':')[0]=='19':
-					if line_new[5] == 'up':
-						ans[2][19] = ans[2][19] + 1
-					else: ans[3][19] = ans[3][19] + 1
-				if line_new[2].split(':')[0]=='20':
-					if line_new[5] == 'up':
-						ans[2][20] = ans[2][20] + 1
-					else: ans[3][20] = ans[3][20] + 1
-				if line_new[2].split(':')[0]=='21':
-					if line_new[5] == 'up':
-						ans[2][21] = ans[2][21] + 1
-					else: ans[3][21] = ans[3][21] + 1
-				if line_new[2].split(':')[0]=='22':
-					if line_new[5] == 'up':
-						ans[2][22] = ans[2][22] + 1
-					else: ans[3][22] = ans[3][22] + 1
-				if line_new[2].split(':')[0]=='23':
-					if line_new[5] == 'up':
-						ans[2][23] = ans[2][23] + 1
-					else: ans[3][23] = ans[3][23] + 1				
-		rf.close()	
-	return ans
-'''
-
-
-# --------update res----pythn----
-# 主程序入口
-
-def main(b):
-    print b
+def main(params):
     line_new = []
-    lon_r = b['lon']
-    lat_r = b['lat']
+    lon_r = params['lon']
+    lat_r = params['lat']
+    avgPrice = params['avgPrice']
     pp_r = pp(lon_r, lat_r)
     line_new.append((7, str(pp_r[0])))  # line_new[9]
     line_new.append((8, str(pp_r[1])))  # line_new[10]
@@ -383,5 +103,6 @@ def main(b):
     print line_w
     return line_w
 
-if __name__== '__main__':
+
+if __name__ == '__main__':
     main({'lon': 121.5, 'lat': 35.2})

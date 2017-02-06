@@ -51,27 +51,30 @@ public class PythonFactory {
      * @param params    The parameters of the  @function
      */
     public static PyObject getResult(URL pyFileUrl, String function, Map<String, Object> params) {
-        if(Objects.nonNull(pyFileUrl)) {
-            PythonInterpreter interpreter = new PythonInterpreter();
-            interpreter.exec("import sys");
-            //java和python协同工作时会导致python的os，sys的路径和单纯在python环境下是不一致，这里将claspath添加到python的sys.path中以便于python能够相对于classpath去寻找文件
-            interpreter.exec("sys.path.append('" + PythonFactory.class.getResource("/").getPath().substring(1) + "')");
-            interpreter.execfile(pyFileUrl.getPath());
-            PyFunction pyFunction = null;
-            Map<PyObject, PyObject> table = new HashMap<PyObject, PyObject>();
-            pyFunction = interpreter.get(function, PyFunction.class);
-            //不使用java8的新的api,Iterator的方式其更高效
-            Iterator<String> iterator = params.keySet().iterator();
-            String key;
-            while(iterator.hasNext()) {
-                key = iterator.next();
-                table.put(new PyString(key), PyJavaType.wrapJavaObject(params.get(key)));
-            }
-            PyDictionary dict = new PyDictionary(table);
-            PyObject result = pyFunction.__call__(dict);
-            return result;
+        if(Objects.isNull(pyFileUrl))
+            pyFileUrl = PythonFactory.class.getResource("/");
+        PythonInterpreter interpreter = new PythonInterpreter();
+        interpreter.exec("import sys");
+        //java和python协同工作时会导致python的os，sys的路径和单纯在python环境下是不一致，这里将claspath添加到python的sys.path中以便于python能够相对于classpath去寻找文件
+        interpreter.exec("sys.path.append('" + PythonFactory.class.getResource("/").getPath().substring(1) + "')");
+        interpreter.execfile(pyFileUrl.getPath());
+        PyFunction pyFunction = null;
+        Map<PyObject, PyObject> table = new HashMap<PyObject, PyObject>();
+        pyFunction = interpreter.get(function, PyFunction.class);
+        //不使用java8的新的api,Iterator的方式其更高效
+        Iterator<String> iterator = params.keySet().iterator();
+        String key;
+        while(iterator.hasNext()) {
+            key = iterator.next();
+            table.put(new PyString(key), PyJavaType.wrapJavaObject(params.get(key)));
         }
-        return null;
+        PyDictionary dict = new PyDictionary(table);
+        PyObject result = pyFunction.__call__(dict);
+        return result;
+    }
+
+    public static PyObject getResult(String function, Map<String, Object> params) {
+        return  getResult(null,function,params);
     }
 
 }
