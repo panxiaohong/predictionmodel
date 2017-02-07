@@ -17,7 +17,7 @@ public class PredictionmodelApplication {
 	/** index.html*/
 	@RequestMapping("/")
 	public String  index(){
-		return "index";
+		return "main";
 	}
 
 	public static void main(String[] args) {

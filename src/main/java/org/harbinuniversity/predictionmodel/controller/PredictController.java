@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @author leihong.pan
  */
 @RestController
-@RequestMapping("/rest/")
+@RequestMapping("/rest")
 @Slf4j
 public class PredictController {
 
@@ -25,6 +25,6 @@ public class PredictController {
 
     @RequestMapping(value = "/predict/",method = RequestMethod.GET)
     public String predict(@RequestParam double lon,@RequestParam double lat,@RequestParam double avgPrice){
-        return predictService.predict(lon,lat,avgPrice);
+       return predictService.predict(lon,lat,avgPrice);
     }
 }
