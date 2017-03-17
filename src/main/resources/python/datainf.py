@@ -83,8 +83,8 @@ def main(params):
     lat_r = params['lat']
     avgPrice = params['avgPrice']
     pp_r = pp(lon_r, lat_r)
-    line_new.append((7, str(pp_r[0])))  # line_new[9]
-    line_new.append((8, str(pp_r[1])))  # line_new[10]
+    line_new.append((2, str(pp_r[0])))  # line_new[9]
+    line_new.append((3, str(pp_r[1])))  # line_new[10]
 
     tt = 9
     poi_r = poi(lon_r, lat_r)

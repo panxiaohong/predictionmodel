@@ -35,20 +35,20 @@
                     <div class="form-group">
                         <label for="inputEmail3" class="col-sm-2 control-label">纬度</label>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control" id="inputEmail3" placeholder="lon" ng-model="lon">
+                            <input type="text" class="form-control" id="inputEmail3" placeholder="lon" ng-model="lon">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputPassword3" class="col-sm-2 control-label">经度</label>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control" id="inputPassword3" placeholder="lat"
+                            <input type="text" class="form-control" id="inputPassword3" placeholder="lat"
                                    ng-model="lat">
                         </div>
                     </div>
                     <div class="form-group">
                         <label for="inputPassword3" class="col-sm-2 control-label">均价</label>
                         <div class="col-sm-8">
-                            <input type="number" class="form-control" id="inputPassword3" placeholder="avgPrice"
+                            <input type="text" class="form-control" id="inputPassword3" placeholder="avgPrice"
                                    ng-model="avgPrice">
                         </div>
                     </div>
