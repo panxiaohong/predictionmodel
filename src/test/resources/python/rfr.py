@@ -1,17 +1,9 @@
-import math,getopt,os
+import math
+import os
 from sklearn.ensemble import RandomForestRegressor
-
-opts, args = getopt.getopt(sys.argv[1:], "", ["lat=", "lon="])
-
-for opt, vaule in opts:
-	if opt == '--lon':
-		_lon = vaule
-	elif opt == '--lat':
-		_lat = vaule
 
 A1 = []
 b1 = []
-file_package = os.getcwd()+"\data\\";
 with open(file_package+'train1.txt','r') as rf:
 	for line in rf:
 		line_new = line.split(',')

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*- 
-import math, os, sys
+import math, os, sys,pickle
 import config as Config
 from MySqlConn import Mysql
 
@@ -105,4 +105,4 @@ def main(params):
 
 
 if __name__ == '__main__':
-    main({'lon': 121.5, 'lat': 35.2})
+    pre=pickle.load(rf.pickle)
